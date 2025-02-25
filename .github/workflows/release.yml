@@ -2,15 +2,14 @@ name: Build ARM64 Debian Package
 
 on:
   push:
-   branches:
-     - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - 'v*' # Trigger on Git tags like v1.0.0
 
 jobs:
   build-deb:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,7 +17,7 @@ jobs:
       - name: Get Git tag version
         id: get_version
         run: |
-          VERSION=0.0.0-$(git rev-parse --short HEAD)
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
           echo "Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -39,8 +38,7 @@ jobs:
             checkinstall -D -y --pkgname=remote-audio --pkgversion=$VERSION --arch=arm64 --pkggroup=audio
           "
 
-      - name: Upload Debian package as artifact
-        uses: actions/upload-artifact@v4
+      - name: Create release and upload Debian artifact
+        uses: softprops/action-gh-release@v2
         with:
-          name: remote-audio_${{ steps.get_version.outputs.version }}-1_arm64.deb
-          path: remote-audio_${{ steps.get_version.outputs.version }}-1_arm64.deb
+          files: remote-audio_${{ steps.get_version.outputs.version }}-1_arm64.deb
