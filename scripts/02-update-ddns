@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Only run on the primary interface
+INTERFACE="wwan0"
+
+# Check if the interface is up and has an IP address
+if [ "$DEVICE_IP_IFACE" = "$INTERFACE" ] && [ "$NM_DISPATCHER_ACTION" = "up" ]; then
+    # Update the Dynamic DNS record
+    /usr/sbin/inadyn --once --iface=$INTERFACE --foreground --no-pidfile
+fi

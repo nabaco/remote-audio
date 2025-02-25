@@ -1,0 +1,12 @@
+[Unit]
+Description=Remote audio receiver daemon
+Conflicts=remote-audio-receiver.service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/receiver
+EnvironmentFile=/etc/remote-audio.conf
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

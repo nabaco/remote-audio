@@ -35,7 +35,7 @@ jobs:
             ./autogen.sh &&
             ./configure --host=aarch64-linux-gnu &&
             make &&
-            checkinstall -D -y --pkgname=remote-audio --pkgversion=$VERSION --arch=arm64 --pkggroup=audio
+            checkinstall -D -y --pkgname=remote-audio --pkgversion=$VERSION --arch=arm64 --pkggroup=audio --install=no
           "
 
       - name: Create release and upload Debian artifact

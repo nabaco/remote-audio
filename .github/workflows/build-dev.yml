@@ -36,7 +36,12 @@ jobs:
             ./autogen.sh &&
             ./configure --host=aarch64-linux-gnu &&
             make &&
-            checkinstall -D -y --pkgname=remote-audio --pkgversion=$VERSION --arch=arm64 --pkggroup=audio
+            checkinstall -D -y --pkgname=remote-audio \
+              --arch=arm64 \
+              --install=no \
+              --pkgversion=$VERSION \
+              --pkggroup=audio \
+              --requires=\"network-manager,inadyn\"
           "
 
       - name: Upload Debian package as artifact
