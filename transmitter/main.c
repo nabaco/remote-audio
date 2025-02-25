@@ -57,6 +57,8 @@ int main(int argc, char *argv[]) {
     GstBus *bus;
     GstStateChangeReturn ret;
     const gchar *host;
+    GstPad *src_pad;
+    GstCaps *caps;
 
     // Get the host IP from the environment variable
     host = g_getenv("UDP_HOST");
@@ -71,11 +73,6 @@ int main(int argc, char *argv[]) {
     // Create elements
     source = gst_element_factory_make("alsasrc", "source");
     sink = gst_element_factory_make("udpsink", "sink");
-
-    // Set properties
-    g_object_set(source, "device", "hw:0,0", NULL);
-    g_object_set(sink, "host", host, NULL);
-    g_object_set(sink, "port", 5000, NULL);
 
     // Create the pipeline
     pipeline = gst_pipeline_new("audio-sender-pipeline");
@@ -92,6 +89,38 @@ int main(int argc, char *argv[]) {
         gst_object_unref(pipeline);
         return -1;
     }
+
+    // Set properties
+    g_object_set(source, "device", "hw:0,0", NULL);
+    g_object_set(sink, "host", host, NULL);
+    g_object_set(sink, "port", 5000, NULL);
+
+    // Define the capabilities
+    caps = gst_caps_new_simple("audio/x-raw",
+        "format", G_TYPE_STRING, "S24LE",
+        "channels", G_TYPE_INT, 2,
+        "rate", G_TYPE_INT, 48000,
+        NULL);
+
+    // Get the source pad of the alsasrc element
+    src_pad = gst_element_get_static_pad(source, "src");
+    if (!src_pad) {
+        g_printerr("Could not get source pad from alsasrc.\n");
+        gst_object_unref(pipeline);
+        return -1;
+    }
+
+    // Set the capabilities on the source pad
+    if (!gst_pad_set_caps(src_pad, caps)) {
+        g_printerr("Could not set caps on source pad.\n");
+        gst_object_unref(pipeline);
+        gst_object_unref(src_pad);
+        return -1;
+    }
+
+    // Release the pad and caps references
+    gst_object_unref(src_pad);
+    gst_caps_unref(caps);
 
     // Set up a bus watch to listen for messages
     bus = gst_element_get_bus(pipeline);
